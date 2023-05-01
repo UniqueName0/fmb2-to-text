@@ -1,0 +1,10 @@
+cabal-version: 3.0
+name: fmb2-to-txt
+version: 0.1.0.0
+
+Executable main
+    main-is: main.hs
+    build-depends:
+        base >=4.14.3.0,
+        bytestring, split
+    hs-source-dirs: ./
