@@ -12,7 +12,7 @@ main = do
     content <- BS.readFile $ args!!0
     let brokenContent = BS.reverse $ fst $ BS.breakSubstring (BSU.pack "    ") (BS.reverse content)
     
-    let partCount = convertToInt16 $ BS.take 2 $ BS.drop 0xF brokenContent
+    let partCount = convertTo_uI16 $ BS.unpack $ BS.take 2 $ BS.drop 0xF brokenContent
     print $ "Number of parts: " ++ (show partCount)
     
     
@@ -27,19 +27,27 @@ printFaceData faceData = do
     let colors = Prelude.last selectedData
     
     Prelude.putStrLn "\n\nvertices: "
-    print vertices
+    print $ vertBytesToInt16 vertices
     
     Prelude.putStrLn "colors: " 
     print colors
     
     if Prelude.length faceData > 1
         then printFaceData $ Prelude.tail faceData
-        else print "test"
+        else print "End"
 
 
-convertToInt16 :: ByteString -> Int
-convertToInt16 bytes = (fromIntegral((Maybe.fromJust(bytes!?0))) * 256 + fromIntegral(Maybe.fromJust(bytes!? 1)))
+convertTo_uI16 :: [Word8] -> Int
+convertTo_uI16 bytes | Prelude.length bytes == 2 = (fromIntegral(bytes!!0) * 256 + fromIntegral(bytes!!1))
+                     | Prelude.length bytes /= 2 = 0
 
+--32767
+convertTo_sI16 :: [Word8] -> Int
+convertTo_sI16 bytes | fromIntegral(bytes!!0) < 128  = convertTo_uI16 bytes
+                     | fromIntegral(bytes!!0) >= 128 = (convertTo_uI16 bytes) - 32767
+
+vertBytesToInt16 :: ByteString -> [Int]
+vertBytesToInt16 bytes = Prelude.map convertTo_sI16 $ chunksOf 2 $ BS.unpack bytes
 
 tokenise x y = h : if BS.null t then [] else tokenise x (BS.drop (BS.length x) t)
     where (h,t) = breakSubstring x y
