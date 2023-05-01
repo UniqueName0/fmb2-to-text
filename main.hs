@@ -26,8 +26,9 @@ printFaceData faceData = do
     let vertices = Prelude.head selectedData
     let colors = Prelude.last selectedData
     
+    --print $ Prelude.length selectedData
     Prelude.putStrLn "\n\nvertices: "
-    print $ vertBytesToInt16 vertices
+    print $ formatVerts vertices
     
     Prelude.putStrLn "colors: " 
     print colors
@@ -41,13 +42,13 @@ convertTo_uI16 :: [Word8] -> Int
 convertTo_uI16 bytes | Prelude.length bytes == 2 = (fromIntegral(bytes!!0) * 256 + fromIntegral(bytes!!1))
                      | Prelude.length bytes /= 2 = 0
 
---32767
+
 convertTo_sI16 :: [Word8] -> Int
 convertTo_sI16 bytes | fromIntegral(bytes!!0) < 128  = convertTo_uI16 bytes
-                     | fromIntegral(bytes!!0) >= 128 = (convertTo_uI16 bytes) - 32767
+                     | fromIntegral(bytes!!0) >= 128 = (convertTo_uI16 bytes) - 65536
 
-vertBytesToInt16 :: ByteString -> [Int]
-vertBytesToInt16 bytes = Prelude.map convertTo_sI16 $ chunksOf 2 $ BS.unpack bytes
+formatVerts :: ByteString -> [[Int]]
+formatVerts bytes = chunksOf 3 $ Prelude.map convertTo_sI16 $ chunksOf 2 $ BS.unpack bytes
 
 tokenise x y = h : if BS.null t then [] else tokenise x (BS.drop (BS.length x) t)
     where (h,t) = breakSubstring x y
