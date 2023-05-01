@@ -3,7 +3,7 @@ import qualified Data.ByteString.Char8 as BSU
 import Data.Maybe as Maybe
 import Data.String as String
 import Data.List.Split
-import Data.List
+import Data.List as DL
 import GHC.Word
 import System.Environment
 
@@ -24,7 +24,7 @@ main = do
 printFaceData faceData = do
     let selectedData = Prelude.head faceData
     let vertices = formatVerts $ Prelude.head selectedData
-    let colors = Prelude.last selectedData
+    let colors = formatColors $ Prelude.last selectedData
     
     --print $ Prelude.length selectedData
     Prelude.putStrLn "\n\n\n\nvertices: "
@@ -49,8 +49,14 @@ convertTo_sI16 :: [Word8] -> Int
 convertTo_sI16 bytes | fromIntegral(bytes!!0) < 128  = convertTo_uI16 bytes
                      | fromIntegral(bytes!!0) >= 128 = (convertTo_uI16 bytes) - 65536
 
+colorToString :: [Word8] -> String
+colorToString color | Prelude.length color == 4 = "rgb:(" ++ (show (color!!0)) ++ ", " ++ (show (color!!1)) ++ ", " ++ (show (color!!2)) ++ ") Opacity: " ++ (show (fromIntegral(color!!3) / 2.55)) ++ "%"
+                    | Prelude.length color /= 4 = "Error"
 formatVerts :: ByteString -> [[Int]]
 formatVerts bytes = chunksOf 3 $ Prelude.map convertTo_sI16 $ chunksOf 2 $ BS.unpack bytes
+
+formatColors :: ByteString -> [String]
+formatColors colors = Prelude.map (colorToString) $ chunksOf 4 $ BS.unpack colors
 
 tokenise x y = h : if BS.null t then [] else tokenise x (BS.drop (BS.length x) t)
     where (h,t) = breakSubstring x y
