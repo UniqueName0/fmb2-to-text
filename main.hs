@@ -3,6 +3,7 @@ import qualified Data.ByteString.Char8 as BSU
 import Data.Maybe as Maybe
 import Data.String as String
 import Data.List.Split
+import Data.List
 import GHC.Word
 import System.Environment
 
@@ -18,19 +19,20 @@ main = do
     
     let faceData = chunksOf 3 $ Prelude.reverse $ Prelude.take (partCount * 3) $ Prelude.reverse $ tokenise (BSU.pack "\NUL\NUL") $ BS.dropEnd 2 brokenContent
     printFaceData faceData
-    print "end"
 
 
 printFaceData faceData = do
     let selectedData = Prelude.head faceData
-    let vertices = Prelude.head selectedData
+    let vertices = formatVerts $ Prelude.head selectedData
     let colors = Prelude.last selectedData
     
     --print $ Prelude.length selectedData
-    Prelude.putStrLn "\n\nvertices: "
-    print $ formatVerts vertices
+    Prelude.putStrLn "\n\n\n\nvertices: "
+    print vertices
+    Prelude.putStrLn "\nduplicates removed: "
+    print $ nub vertices
     
-    Prelude.putStrLn "colors: " 
+    Prelude.putStrLn "\ncolors: " 
     print colors
     
     if Prelude.length faceData > 1
