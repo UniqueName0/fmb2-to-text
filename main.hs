@@ -20,7 +20,6 @@ main = do
     let faceData = chunksOf 3 $ Prelude.reverse $ Prelude.take (partCount * 3) $ Prelude.reverse $ tokenise (BSU.pack "\NUL\NUL") $ BS.dropEnd 2 brokenContent
     printFaceData faceData
 
-
 printFaceData faceData = do
     let selectedData = Prelude.head faceData
     let vertices = formatVerts $ Prelude.head selectedData
@@ -29,11 +28,14 @@ printFaceData faceData = do
     --print $ Prelude.length selectedData
     Prelude.putStrLn "\n\n\n\nvertices: "
     print vertices
-    Prelude.putStrLn "\nduplicates removed: "
-    print $ nub vertices
     
     Prelude.putStrLn "\ncolors: " 
     print colors
+    
+    Prelude.putStrLn "\nvertices with duplicates removed: "
+    print $ nub vertices
+    Prelude.putStrLn "\ncolors with duplicates removed: "
+    print $ nub colors
     
     if Prelude.length faceData > 1
         then printFaceData $ Prelude.tail faceData
@@ -55,8 +57,8 @@ colorToString color | Prelude.length color == 4 = "rgb:(" ++ (show (color!!0)) +
 formatVerts :: ByteString -> [[Int]]
 formatVerts bytes = chunksOf 3 $ Prelude.map convertTo_sI16 $ chunksOf 2 $ BS.unpack bytes
 
-formatColors :: ByteString -> [String]
-formatColors colors = Prelude.map (colorToString) $ chunksOf 4 $ BS.unpack colors
+formatColors :: ByteString -> [[String]]
+formatColors colors = chunksOf 3 $ Prelude.map (colorToString) $ chunksOf 4 $ BS.unpack colors
 
 tokenise x y = h : if BS.null t then [] else tokenise x (BS.drop (BS.length x) t)
     where (h,t) = breakSubstring x y
